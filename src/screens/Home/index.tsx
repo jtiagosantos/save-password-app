@@ -6,6 +6,8 @@ import { Header } from '../../components/Header';
 import { SearchBar } from '../../components/SearchBar';
 import { LoginDataItem } from '../../components/LoginDataItem';
 
+import { STORAGE_PASSWORDS_KEY } from '../../constants/storage';
+
 import {
   Container,
   Metadata,
@@ -29,16 +31,25 @@ export function Home() {
   const [data, setData] = useState<LoginListDataProps>([]);
 
   async function loadData() {
-    const dataKey = '@savepass:logins';
-    // Get asyncStorage data, use setSearchListData and setData
+    const storedPasswords = await AsyncStorage.getItem(STORAGE_PASSWORDS_KEY);
+    if (storedPasswords) {
+      const formattedStoredPasswords = JSON.parse(storedPasswords);
+      setSearchListData(formattedStoredPasswords);
+      setData(formattedStoredPasswords);
+    }
   }
 
   function handleFilterLoginData() {
-    // Filter results inside data, save with setSearchListData
+    if (!!searchText) {
+      const filteredPasswords = data.filter(
+        (password) => password.service_name.includes(searchText)
+      );
+      setSearchListData(filteredPasswords);
+    }
   }
 
   function handleChangeInputText(text: string) {
-    // Update searchText value
+    setSearchText(text);
   }
 
   useFocusEffect(useCallback(() => {

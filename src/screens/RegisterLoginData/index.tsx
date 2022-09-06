@@ -12,6 +12,8 @@ import { Header } from '../../components/Header';
 import { Input } from '../../components/Form/Input';
 import { Button } from '../../components/Form/Button';
 
+import { STORAGE_PASSWORDS_KEY } from '../../constants/storage';
+
 import {
   Container,
   Form
@@ -45,7 +47,7 @@ export function RegisterLoginData() {
     formState: {
       errors
     }
-  } = useForm({
+  } = useForm<FormData>({
     resolver: yupResolver(schema)
   });
 
@@ -55,9 +57,13 @@ export function RegisterLoginData() {
       ...formData
     }
 
-    const dataKey = '@savepass:logins';
+    const storedPasswords = await AsyncStorage.getItem(STORAGE_PASSWORDS_KEY);
+    const formattedStoredPasswords = JSON.parse(storedPasswords || '[]');
+    const newPasswords = [...formattedStoredPasswords, newLoginData];
 
-    // Save data on AsyncStorage and navigate to 'Home' screen
+    await AsyncStorage.setItem(STORAGE_PASSWORDS_KEY, JSON.stringify(newPasswords));
+
+    navigate('Home');
   }
 
   return (
@@ -73,11 +79,8 @@ export function RegisterLoginData() {
             testID="service-name-input"
             title="Nome do serviço"
             name="service_name"
-            error={
-              // Replace here with real content
-              'Has error ? show error message'
-            }
-            control={control}
+            error={errors.service_name?.message!}
+            control={control as any}
             autoCapitalize="sentences"
             autoCorrect
           />
@@ -85,11 +88,8 @@ export function RegisterLoginData() {
             testID="email-input"
             title="E-mail ou usuário"
             name="email"
-            error={
-              // Replace here with real content
-              'Has error ? show error message'
-            }
-            control={control}
+            error={errors.email?.message!}
+            control={control as any}
             autoCorrect={false}
             autoCapitalize="none"
             keyboardType="email-address"
@@ -98,11 +98,8 @@ export function RegisterLoginData() {
             testID="password-input"
             title="Senha"
             name="password"
-            error={
-              // Replace here with real content
-              'Has error ? show error message'
-            }
-            control={control}
+            error={errors.password?.message!}
+            control={control as any}
             secureTextEntry
           />
 
@@ -111,7 +108,7 @@ export function RegisterLoginData() {
               marginTop: RFValue(8)
             }}
             title="Salvar"
-            onPress={handleSubmit(handleRegister)}
+            onPress={handleSubmit(handleRegister as any)}
           />
         </Form>
       </Container>
